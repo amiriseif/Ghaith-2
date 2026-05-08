@@ -1,0 +1,541 @@
+/* Phone Container and Frame */
+.phone-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+  width: 100%;
+}
+
+.phone-frame {
+  position: relative;
+  width: min(375px, 90vw);
+  height: auto;
+  aspect-ratio: 375 / 812;
+  max-width: 375px;
+  max-height: 812px;
+  background: #000;
+  border-radius: 40px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 12px solid #000;
+}
+
+/* Notch / Dynamic Island */
+.notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 28px;
+  background: #000;
+  border-radius: 0 0 40px 40px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Side Buttons - Volume */
+.button-group {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+
+.button-group.volume {
+  left: -8px;
+  top: 100px;
+}
+
+.button-volume {
+  width: 4px;
+  height: 30px;
+  background: linear-gradient(90deg, #333 0%, #555 50%, #333 100%);
+  border-radius: 2px;
+  box-shadow: -2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Power Button */
+.button-power {
+  position: absolute;
+  right: -8px;
+  top: 200px;
+  width: 4px;
+  height: 60px;
+  background: linear-gradient(90deg, #333 0%, #666 50%, #333 100%);
+  border-radius: 2px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Phone Screen */
+.phone-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: 28px;
+}
+
+/* Status Bar */
+.status-bar {
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 50;
+  gap: 8px;
+}
+
+.system-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  color: #fff;
+  font-size: clamp(10px, 2.5vw, 13px);
+  font-weight: 600;
+  gap: 8px;
+  min-width: 0;
+}
+
+.time {
+  flex: 0 0 auto;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.status-indicator {
+  flex: 1;
+  text-align: right;
+  font-size: clamp(9px, 2.2vw, 11px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  animation: pulse 2s infinite;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-indicator.connected {
+  color: #10b981;
+}
+
+.status-indicator.disconnected {
+  color: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Phone Header */
+.phone-header {
+  padding: clamp(12px, 3vw, 20px) clamp(12px, 3vw, 16px);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  flex-shrink: 0;
+}
+
+.ghaith-logo {
+  font-size: clamp(18px, 6vw, 28px);
+  font-weight: 900;
+  color: #10b981;
+  letter-spacing: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.pulse-dot {
+  display: inline-block;
+  width: clamp(6px, 1.5vw, 8px);
+  height: clamp(6px, 1.5vw, 8px);
+  background: #10b981;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+    opacity: 0.8;
+  }
+}
+
+.sub-text {
+  font-size: clamp(10px, 2.2vw, 12px);
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Dashboard Content */
+.phone-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: clamp(12px, 2.5vw, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2vw, 12px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.4) transparent;
+}
+
+.phone-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.phone-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.phone-content::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.4);
+  border-radius: 2px;
+}
+
+/* Cards */
+.card {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: clamp(12px, 3vw, 16px);
+  padding: clamp(12px, 2.5vw, 16px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
+}
+
+.card-header {
+  font-size: clamp(9px, 2vw, 11px);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  opacity: 0.8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Water Card */
+.water-card {
+  min-height: auto;
+}
+
+.water-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 16px);
+  flex-wrap: wrap;
+}
+
+.water-bottle {
+  position: relative;
+  width: clamp(35px, 8vw, 45px);
+  height: clamp(80px, 15vw, 100px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(16, 185, 129, 0.5);
+  border-radius: 8px 8px 16px 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.water-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(180deg, #00d4ff 0%, #10b981 100%);
+  transition: height 0.5s ease;
+  animation: water-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes water-shimmer {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.2);
+  }
+}
+
+.water-wave {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0,50 Q25,40 50,50 T100,50" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"/></svg>') repeat-x;
+  opacity: 0.5;
+}
+
+.water-text {
+  font-size: clamp(24px, 7vw, 32px);
+  font-weight: 900;
+  color: #10b981;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.water-text::after {
+  content: '%';
+  font-size: clamp(10px, 3vw, 14px);
+  opacity: 0.7;
+}
+
+/* Turbine Card - REMOVED */
+/* Servo Card - REMOVED */
+
+/* Temperature Card */
+.temp-card {
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.temp-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.temp-value {
+  font-size: clamp(28px, 8vw, 36px);
+  font-weight: 900;
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.temp-status {
+  font-size: clamp(11px, 2.5vw, 13px);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+/* Rain Level Card */
+.rain-card {
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.rain-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.rain-value {
+  font-size: clamp(28px, 8vw, 36px);
+  font-weight: 900;
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.rain-status {
+  font-size: clamp(11px, 2.5vw, 13px);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}
+
+/* System Info Card */
+.info-card {
+  min-height: auto;
+  padding: clamp(12px, 2.5vw, 16px) !important;
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  border-left: 2px solid rgba(16, 185, 129, 0.5);
+}
+
+.info-label {
+  font-size: clamp(10px, 2vw, 12px);
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: clamp(11px, 2.2vw, 13px);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.info-value.online {
+  color: #10b981;
+}
+
+.info-value.offline {
+  color: #ef4444;
+}
+
+.info-value.motor-on {
+  color: #10b981;
+}
+
+.info-value.motor-off {
+  color: #6b7280;
+}
+
+/* Improved Media Queries */
+@media (max-width: 600px) {
+  .phone-frame {
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .app-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .control-panel {
+    order: 2;
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (max-height: 900px) {
+  .phone-frame {
+    transform: scale(0.95);
+  }
+
+  .card {
+    padding: clamp(10px, 2vw, 14px);
+  }
+}
+
+@media (max-height: 800px) {
+  .phone-frame {
+    transform: scale(0.85);
+  }
+
+  .card {
+    padding: clamp(8px, 1.5vw, 12px);
+  }
+
+  .card-header {
+    margin-bottom: 6px;
+  }
+}
+
+@media (max-height: 700px) {
+  .phone-frame {
+    transform: scale(0.75);
+  }
+
+  .phone-content {
+    gap: 8px;
+  }
+
+  .card {
+    padding: clamp(6px, 1vw, 10px);
+  }
+}
+
+@media (max-height: 600px) {
+  .phone-frame {
+    transform: scale(0.65);
+  }
+
+  .phone-content {
+    gap: 6px;
+  }
+
+  .card {
+    padding: 6px;
+  }
+}
+
+/* Tablet and larger screens */
+@media (min-width: 1024px) {
+  .app-container {
+    gap: 60px;
+  }
+
+  .phone-frame {
+    box-shadow: 
+      0 40px 80px rgba(0, 0, 0, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Very small screens - optimize for mobile */
+@media (max-width: 375px) {
+  .phone-frame {
+    width: 100%;
+    min-width: 300px;
+  }
+
+  .ghaith-logo {
+    letter-spacing: 1px;
+  }
+
+  .card-header {
+    letter-spacing: 0.5px;
+  }
+}

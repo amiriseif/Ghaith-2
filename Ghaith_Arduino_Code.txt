@@ -1,0 +1,211 @@
+// GHAITH IRRIGATION SYSTEM - ARDUINO CODE (ULTRASONIC + RAIN + MOTOR + LEDS)
+// Sends JSON sensor data to React web app via serial
+// Baud Rate: 9600
+// Sensors: Ultrasonic (water level) + Rain sensor + LEDs
+// Motor: Control motor on/off
+// LEDs: Rain indicator LED + Full tank indicator LED
+
+// ===== PIN DEFINITIONS =====
+const int ULTRASONIC_TRIGGER_PIN = 10;  // Digital output for ultrasonic trigger
+const int ULTRASONIC_ECHO_PIN = 11;     // Digital input for ultrasonic echo
+const int RAIN_SENSOR_PIN = A0;         // Analog input for rain water level sensor
+const int MOTOR_PIN = 9;                // Digital output for motor control
+const int RAIN_LED_PIN = 2;             // Digital output for rain indicator LED
+const int FULL_TANK_LED_PIN = 3;        // Digital output for full tank indicator LED
+
+// ===== GLOBAL VARIABLES =====
+unsigned long lastSendTime = 0;
+const unsigned long SEND_INTERVAL = 500;  // Send data every 500ms
+boolean motorState = false;  // Store motor state (true = ON, false = OFF)
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+  
+  // Setup sensor pins
+  pinMode(ULTRASONIC_TRIGGER_PIN, OUTPUT);
+  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
+  pinMode(RAIN_SENSOR_PIN, INPUT);
+  pinMode(MOTOR_PIN, OUTPUT);
+  pinMode(RAIN_LED_PIN, OUTPUT);
+  pinMode(FULL_TANK_LED_PIN, OUTPUT);
+  
+  // Start motor OFF
+  digitalWrite(MOTOR_PIN, LOW);
+  
+  // Start LEDs OFF
+  digitalWrite(RAIN_LED_PIN, LOW);
+  digitalWrite(FULL_TANK_LED_PIN, LOW);
+  
+  delay(100);
+  Serial.println("{\"status\":\"Initialized\"}");
+}
+
+void loop() {
+  // ===== SEND SENSOR DATA AT REGULAR INTERVALS =====
+  if (millis() - lastSendTime >= SEND_INTERVAL) {
+    sendSensorData();
+    lastSendTime = millis();
+  }
+  
+  // ===== RECEIVE AND PROCESS COMMANDS FROM WEB APP =====
+  if (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    
+    if (command == "MOTOR_ON") {
+      turnMotorOn();
+      Serial.println("{\"motorOn\":true,\"status\":\"Motor ON\"}");
+      Serial.flush();
+    } else if (command == "MOTOR_OFF") {
+      turnMotorOff();
+      Serial.println("{\"motorOn\":false,\"status\":\"Motor OFF\"}");
+      Serial.flush();
+    }
+  }
+}
+
+// ===== SEND SENSOR DATA AS JSON =====
+void sendSensorData() {
+  // Read ultrasonic water level (distance in cm)
+  long distance = getUltrasonicDistance();
+  
+  // Convert distance to water level percentage
+  // Adjust these values based on your tank height
+  // Empty tank (sensor far): ~40 cm, Full tank (sensor close): ~5 cm
+  // Invert output: subtract from 100 to flip the readings
+  int waterLevel = 100 - map(distance, 40, 5, 0, 100);
+  waterLevel = constrain(waterLevel, 0, 100);  // Ensure 0-100 range
+  
+  // Read rain sensor (analog)
+  int rainRaw = analogRead(RAIN_SENSOR_PIN);
+  
+  // Convert rain sensor level: 0-1023 analog range to 0-100%
+  // Dry (no rain): high value (~1023), Wet (rain): low value (~0)
+  // So we invert: map from 900 to 100
+  int rainLevel = map(rainRaw, 900, 100, 0, 100);
+  rainLevel = constrain(rainLevel, 0, 100);  // Ensure 0-100 range
+  
+  // Get motor status
+  boolean motorOn = motorState;
+  
+  // ===== LED CONTROL LOGIC =====
+  // Rain LED: Turn ON when rain sensor reading != 0
+  if (rainLevel > 0) {
+    digitalWrite(RAIN_LED_PIN, HIGH);  // Rain detected - LED ON
+  } else {
+    digitalWrite(RAIN_LED_PIN, LOW);   // No rain - LED OFF
+  }
+  
+  // Full Tank LED: Turn ON when distance is very close (~5cm or less)
+  if (distance <= 7) {
+    digitalWrite(FULL_TANK_LED_PIN, HIGH);  // Tank full - LED ON
+  } else {
+    digitalWrite(FULL_TANK_LED_PIN, LOW);   // Tank not full - LED OFF
+  }
+  
+  // Build and send JSON string
+  Serial.print("{\"waterLevel\":");
+  Serial.print(waterLevel);
+  Serial.print(",\"rainLevel\":");
+  Serial.print(rainLevel);
+  Serial.print(",\"motorOn\":");
+  Serial.print(motorOn ? "true" : "false");
+  Serial.println("}");
+}
+
+// ===== ULTRASONIC DISTANCE READING =====
+long getUltrasonicDistance() {
+  // Send trigger pulse (10 microseconds)
+  digitalWrite(ULTRASONIC_TRIGGER_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(ULTRASONIC_TRIGGER_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(ULTRASONIC_TRIGGER_PIN, LOW);
+  
+  // Measure echo pulse duration
+  long pulseDuration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH, 30000);
+  
+  // Convert pulse duration to distance (cm)
+  // Speed of sound: 343 m/s = 0.0343 cm/microsecond
+  // Distance = (duration in microseconds * 0.0343) / 2
+  long distance = pulseDuration * 0.0343 / 2;
+  
+  // Return distance or 0 if timeout
+  return (distance > 0) ? distance : 0;
+}
+
+// ===== MOTOR CONTROL FUNCTIONS =====
+void turnMotorOn() {
+  digitalWrite(MOTOR_PIN, HIGH);
+  motorState = true;
+}
+
+void turnMotorOff() {
+  digitalWrite(MOTOR_PIN, LOW);
+  motorState = false;
+}
+
+/* 
+===== SENSOR CALIBRATION GUIDE =====
+
+1. ULTRASONIC WATER LEVEL SENSOR (Digital D10=Trigger, D11=Echo):
+   - Empty tank: Measure distance with ruler/tape (e.g., 40 cm from water surface to sensor)
+   - Full tank: Measure distance (e.g., 5 cm from water surface to sensor)
+   - Update map() function: map(distance, EMPTY_DISTANCE, FULL_DISTANCE, 0, 100)
+   - Example: map(distance, 40, 5, 0, 100) → then invert with (100 - waterLevel)
+   - NOTE: Readings are INVERTED and corrected with (100 - value) calculation
+   - Full Tank LED turns ON when waterLevel == 100 (distance == ~5cm, bucket full)
+
+2. RAIN WATER LEVEL SENSOR (Analog A0):
+   - Dry (no rain): Read high value (e.g., 900)
+   - Wet (rain detected): Read low value (e.g., 100)
+   - Update map() function: map(rainRaw, WET_VALUE, DRY_VALUE, 0, 100)
+   - Rain LED turns ON when rainLevel > 0 (any rain detected)
+
+3. MOTOR CONTROL (Digital D9):
+   - HIGH = Motor ON
+   - LOW = Motor OFF
+   - Controlled from web app or manually set in code
+   - Web App Command: Send "MOTOR_ON" or "MOTOR_OFF" via serial
+   - Arduino listens for commands in the loop() function
+   - Response: {"motorOn": true/false, "status": "Motor ON/OFF"}
+
+4. RAIN INDICATOR LED (Digital D2):
+   - Turns ON when rain is detected (rainLevel > 0)
+   - Turns OFF when no rain (rainLevel == 0)
+   - Connect: LED positive → Arduino D2 (through 220Ω resistor)
+   - Connect: LED negative → Arduino GND
+
+5. FULL TANK INDICATOR LED (Digital D3):
+   - Turns ON when tank is full (waterLevel == 100%)
+   - Turns OFF when tank is not full (waterLevel < 100%)
+   - Connect: LED positive → Arduino D3 (through 220Ω resistor)
+   - Connect: LED negative → Arduino GND
+
+===== TYPICAL COMPONENT CONNECTIONS =====
+
+ULTRASONIC SENSOR:
+- GND     → Arduino GND
+- VCC     → Arduino 5V
+- TRIG    → Arduino D10 (Trigger pin)
+- ECHO    → Arduino D11 (Echo pin)
+
+RAIN SENSOR:
+- VCC     → Arduino 5V
+- GND     → Arduino GND
+- AO      → Arduino A0 (Analog output)
+
+MOTOR:
+- VCC     → Arduino 5V (via relay/transistor)
+- GND     → Arduino GND
+- Signal  → Arduino D9 (Digital output)
+
+RAIN LED (D2):
+- Positive → Arduino D2 (through 220Ω resistor)
+- Negative → Arduino GND
+
+FULL TANK LED (D3):
+- Positive → Arduino D3 (through 220Ω resistor)
+- Negative → Arduino GND
+*/

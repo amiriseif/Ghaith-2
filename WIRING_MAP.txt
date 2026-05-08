@@ -1,0 +1,406 @@
+GHAITH IRRIGATION SYSTEM - WIRING MAP (ULTRASONIC + RAIN + MOTOR + LEDS)
+=========================================================================
+
+CONFIGURATION:
+- Water Level Sensor (Ultrasonic HC-SR04, Digital D10/D11)
+- Rain Sensor (Analog A0)
+- Motor Control (Digital D9)
+- Rain Indicator LED (Digital D2)
+- Full Tank Indicator LED (Digital D3)
+- Serial USB Connection
+- NO RPM sensor
+- NO temperature sensor
+
+
+ARDUINO PINOUT REFERENCE
+========================
+
+      ┌─────────────────────┐
+      │    ARDUINO UNO      │
+      ├─────────────────────┤
+      │  POWER PINS         │
+      ├─────────────────────┤
+      │ 5V    ─────────────→ Power Supply (+5V)
+      │ GND   ─────────────→ Ground (Common)
+      │ 3.3V  ─────────────→ (Optional, not used)
+      ├─────────────────────┤
+      │  ANALOG INPUTS (A0-A5)
+      ├─────────────────────┤
+      │ A0    ──────────→ RAIN SENSOR
+      │ A1-A5 ──────────→ (Available)
+      ├─────────────────────┤
+      │  DIGITAL PINS (0-13)
+      ├─────────────────────┤
+      │ 0     ──────────→ RX (Serial Input)
+      │ 1     ──────────→ TX (Serial Output)
+      │ 2     ──────────→ RAIN INDICATOR LED
+      │ 3     ──────────→ FULL TANK INDICATOR LED
+      │ 9     ──────────→ MOTOR ON/OFF
+      │ 10    ──────────→ ULTRASONIC TRIGGER
+      │ 11    ──────────→ ULTRASONIC ECHO
+      │ 4-8,  ──────────→ (Available)
+      │ 12-13 ──────────→
+      └─────────────────────┘
+
+
+DETAILED WIRING CONNECTIONS
+===========================
+
+1. ULTRASONIC WATER LEVEL SENSOR (HC-SR04)
+   ──────────────────────────────────────
+
+   Ultrasonic Sensor Pins:
+   ├─ VCC   (5V)    → Arduino 5V
+   ├─ GND           → Arduino GND
+   ├─ TRIG  (10μs)  → Arduino D10 (Trigger)
+   └─ ECHO (variable)→ Arduino D11 (Echo)
+
+   How it works:
+   - Send 10μs pulse to TRIG pin
+   - Measure HIGH duration on ECHO pin
+   - Duration = 2 × (distance / speed of sound)
+   - Formula: distance (cm) = duration (μs) × 0.0343 / 2
+
+   Wire Gauge: 22-24 AWG
+   Cable Length: Up to 2m
+   
+   Typical Distances:
+   - Empty tank (sensor far): ~40 cm
+   - Full tank (sensor close): ~5 cm
+   - Adjust map() values based on your setup
+
+
+2. RAIN WATER LEVEL SENSOR (Capacitive or Float)
+   ───────────────────────────────────────────────
+
+   Rain Sensor:
+   ├─ VCC (Red)    → Arduino 5V
+   ├─ GND (Black)  → Arduino GND
+   └─ OUT (Yellow) → Arduino A0
+
+   Output Behavior:
+   - Dry (no rain): HIGH (~1023)
+   - Wet (rain detected): LOW (~100-400)
+   
+   Wire Gauge: 22-24 AWG
+   Cable Length: Up to 5m
+
+
+3. MOTOR CONTROL (DC Motor via Relay/Transistor)
+   ──────────────────────────────────────────────
+
+   If using Relay Module:
+   ├─ Signal  → Arduino D9
+   ├─ VCC     → Arduino 5V
+   ├─ GND     → Arduino GND
+   └─ COM/NO  → Motor Power
+
+   If using NPN Transistor (2N2222 or similar):
+   ├─ Base (through 1kΩ resistor) → Arduino D9
+   ├─ Collector → Motor +
+   └─ Emitter → Arduino GND
+   └─ Motor - → Motor power supply GND
+
+   Motor Control:
+   - D9 HIGH = Motor ON
+   - D9 LOW = Motor OFF
+
+   Wire Gauge: 18-20 AWG (motor power)
+   Fuse/Protection: 5A recommended
+
+
+4. RAIN INDICATOR LED (D2)
+   ──────────────────────
+
+   LED Setup:
+   ├─ LED Positive (+) → Arduino D2 (through 220Ω resistor)
+   └─ LED Negative (-) → Arduino GND
+
+   Logic:
+   - LED ON: When rain is detected (rainLevel > 0)
+   - LED OFF: When no rain (rainLevel == 0)
+
+   Resistor Calculation:
+   - Standard LED: 220Ω resistor (Red-Red-Brown)
+   - Current limiting: ~15mA @ 5V
+   - Wire Gauge: 22 AWG
+   - Cable Length: Up to 1m
+
+
+5. FULL TANK INDICATOR LED (D3)
+   ────────────────────────────
+
+   LED Setup:
+   ├─ LED Positive (+) → Arduino D3 (through 220Ω resistor)
+   └─ LED Negative (-) → Arduino GND
+
+   Logic:
+   - LED ON: When tank is full (waterLevel == 100%)
+   - LED OFF: When tank is not full (waterLevel < 100%)
+
+   Resistor Calculation:
+   - Standard LED: 220Ω resistor (Red-Red-Brown)
+   - Current limiting: ~15mA @ 5V
+   - Wire Gauge: 22 AWG
+   - Cable Length: Up to 1m
+
+
+6. SERIAL USB CONNECTION
+   ─────────────────────
+
+   Built-in USB (Recommended):
+   - Connect Arduino to PC via USB-B cable
+   - Drivers auto-install (Windows 10+)
+   - Baud Rate: 9600
+
+
+GROUND CONNECTIONS (CRITICAL!)
+==============================
+
+All components must share common ground:
+
+Arduino GND ──┬─── Ultrasonic Sensor GND
+              ├─── Rain Sensor GND
+              ├─── Motor GND / Relay GND
+              ├─── Rain LED GND (negative)
+              ├─── Full Tank LED GND (negative)
+              └─── USB/Serial GND
+
+
+COMPLETE WIRING TABLE
+=====================
+
+Component               | Arduino Pin | Wire Color | Type
+────────────────────────┼────────────┼────────────┼──────────────
+Ultrasonic VCC          | 5V         | Red        | HC-SR04
+Ultrasonic GND          | GND        | Black      | HC-SR04
+Ultrasonic TRIGGER      | D10        | Yellow     | HC-SR04
+Ultrasonic ECHO         | D11        | Green      | HC-SR04
+────────────────────────┼────────────┼────────────┼──────────────
+Rain Sensor VCC         | 5V         | Red        | Capacitive
+Rain Sensor GND         | GND        | Black      | Capacitive
+Rain Sensor OUT         | A0         | Yellow     | Capacitive
+────────────────────────┼────────────┼────────────┼──────────────
+Motor Relay Signal      | D9         | Purple     | Relay/Transistor
+Motor Relay VCC         | 5V         | Red        | Relay/Transistor
+Motor Relay GND         | GND        | Black      | Relay/Transistor
+────────────────────────┼────────────┼────────────┼──────────────
+Rain LED (+)            | D2         | Orange     | LED (220Ω resistor)
+Rain LED (-)            | GND        | Black      | LED
+────────────────────────┼────────────┼────────────┼──────────────
+Full Tank LED (+)       | D3         | Blue       | LED (220Ω resistor)
+Full Tank LED (-)       | GND        | Black      | LED
+────────────────────────┼────────────┼────────────┼──────────────
+Serial USB TX           | TX (Pin 1) | Green      | USB
+Serial USB RX           | RX (Pin 0) | White      | USB
+Serial USB GND          | GND        | Black      | USB
+
+
+STEP-BY-STEP WIRING GUIDE
+=========================
+
+STEP 1: Power Distribution
+─────────────────────────
+1. Connect Arduino 5V → Breadboard Power Rail (+)
+2. Connect Arduino GND → Breadboard Ground Rail (-)
+
+STEP 2: Ultrasonic Sensor (HC-SR04)
+────────────────────────────────────
+1. Connect VCC (red) → +5V Rail
+2. Connect GND (black) → GND Rail
+3. Connect TRIG (yellow) → Arduino D10
+4. Connect ECHO (green) → Arduino D11
+
+Note: ECHO pin may need 5V→3.3V voltage divider if Arduino board is 3.3V
+
+STEP 3: Rain Sensor (Analog)
+──────────────────────────────
+1. Connect VCC (red) → +5V Rail
+2. Connect GND (black) → GND Rail
+3. Connect OUT (yellow) → Arduino A0
+
+STEP 4: Motor Control
+──────────────────────
+1. Connect Relay Signal → Arduino D9
+2. Connect Relay VCC → +5V Rail
+3. Connect Relay GND → GND Rail
+4. Connect Relay COM/NO to motor power circuit
+
+STEP 5: Rain Indicator LED (D2)
+────────────────────────────────
+1. Connect 220Ω resistor to LED positive (+) leg
+2. Connect resistor other end → Arduino D2
+3. Connect LED negative (-) leg → GND Rail
+
+STEP 6: Full Tank Indicator LED (D3)
+──────────────────────────────────────
+1. Connect 220Ω resistor to LED positive (+) leg
+2. Connect resistor other end → Arduino D3
+3. Connect LED negative (-) leg → GND Rail
+
+STEP 7: Serial USB Connection
+──────────────────────────────
+1. Connect Arduino to Computer via USB-B cable
+2. Install drivers if prompted
+3. Verify COM port in Device Manager
+
+
+COMPONENT SPECIFICATIONS
+========================
+
+Ultrasonic Sensor (HC-SR04):
+  • Operating Voltage: 5V DC
+  • Current Draw: 15-20mA
+  • Frequency: 40kHz
+  • Measurement Range: 2cm to 400cm
+  • Accuracy: ±3mm
+  • Resolution: 0.3cm
+
+Rain Water Level Sensor:
+  • Type: Capacitive or Float Switch
+  • Operating Voltage: 3.3-5V DC
+  • Output: 0-5V Analog
+  • Current Draw: 10-30mA
+  • Accuracy: ±2-5%
+
+Motor (via Relay):
+  • Control Voltage: 5V DC
+  • Motor Power: 6-12V DC (external PSU)
+  • Motor Current: 0.5-2A typical
+  • Relay Rating: 10A @ 125/250V AC minimum
+
+Standard LED (with 220Ω resistor):
+  • Operating Voltage: 5V DC
+  • Current Draw: ~15mA per LED
+  • Available Colors: Red, Green, Blue, Yellow, Orange
+  • Brightness: Typical 1000-2000 mcd
+
+
+POWER BUDGET
+============
+
+Component           | Voltage | Current (max) | Total Power
+──────────────────────┼─────────┼───────────────┼──────────
+Ultrasonic Sensor   | 5V      | 20mA          | 0.10W
+Rain Sensor         | 5V      | 30mA          | 0.15W
+Motor (via Relay)   | 5V      | 10mA          | 0.05W
+Rain LED            | 5V      | 15mA          | 0.08W
+Full Tank LED       | 5V      | 15mA          | 0.08W
+Arduino (logic)     | 5V      | 100mA         | 0.50W
+──────────────────────┼─────────┼───────────────┼──────────
+TOTAL (peak)        |         | ~190mA        | 0.96W
+
+Arduino USB Power: 5V / 500mA (sufficient for all sensors and LEDs)
+Motor Power: Requires separate 6-12V PSU (1-3A depending on motor)
+
+
+TROUBLESHOOTING WIRING
+======================
+
+Issue: Ultrasonic not reading / reading 0
+  → Check D10 and D11 connections
+  → Verify TRIG pulse is being sent
+  → Measure voltage on ECHO pin (should pulse HIGH)
+  → Ensure ultrasonic sensor is not obstructed
+
+Issue: Rain sensor always 0 or 1023
+  → Check A0 connection
+  → Use Serial Monitor to check: Serial.println(analogRead(A0))
+  → Verify sensor is in correct environment (dry/wet)
+
+Issue: Motor not turning on
+  → Check D9 connection to relay
+  → Verify relay VCC and GND are connected
+  → Test relay with multimeter (measure continuity)
+  → Check motor power supply voltage/polarity
+
+Issue: LEDs not lighting up
+  → Check D2 and D3 connections to Arduino
+  → Verify LED polarity (long leg = positive, short leg = negative)
+  → Test LED with separate 5V source (check if LED works)
+  → Verify 220Ω resistor is connected in series with LED positive
+  → Check GND rail connection to Arduino GND
+
+Issue: Rain LED stays ON (always lit)
+  → Verify rain sensor is in dry environment
+  → Check rain level mapping in Arduino code
+  → Use Serial Monitor: Serial.println(analogRead(A0))
+  → May need to adjust map() function values
+
+Issue: Full Tank LED stays OFF (never lights)
+  → Verify ultrasonic sensor distance measurement
+  → Check if distance reading == 5cm (100% water level)
+  → Use Serial Monitor to check distance values
+  → May need to adjust empty/full tank calibration distances
+
+Issue: Serial communication failing
+  → Verify USB cable and COM port
+  → Check baud rate (should be 9600)
+  → Install CH340 drivers if needed
+  → Check RX/TX pins on Arduino
+
+Issue: No data appearing
+  → Check baud rate (must be 9600)
+  → Verify USB cable connection
+  → Test with Serial Monitor: Tools > Serial Monitor
+
+Issue: Noise in analog readings
+  → Add 100µF capacitor across sensor power
+  → Use shielded cable for long sensor runs
+  → Keep sensor wires away from power lines
+
+
+CABLE RECOMMENDATIONS
+=====================
+
+Cable Type: Standard twisted pair
+Gauge: 22-24 AWG for signals
+Max Length:
+  • Sensor cables: Up to 5m
+  • USB cable: Use quality USB cable (shorter is better)
+
+Connectors:
+  • Dupont/JST: Standard for breadboard prototyping
+  • Screw terminals: For permanent installation
+  • Soldered: Most reliable for long-term use
+
+
+TESTING CHECKLIST
+=================
+
+□ All components have ground connection
+□ Water sensor reads 0-1023 in Serial Monitor
+□ Temperature sensor reads realistic values (0-50°C)
+□ Web app connects to serial port
+□ Web app receives live JSON data
+□ All connections secure (no loose wires)
+□ No shorts between power/ground
+
+
+MANUAL TURBINE ROTATION SETUP
+=============================
+
+Since there's no servo motor:
+
+1. Water Drainage:
+   - Install overflow hole/spillway at top of tank
+   - Excess water flows out passively (no valve needed)
+   - Keeps tank at maximum level
+
+2. Manual Turbine Rotation:
+   - Connect a small motor or hand crank to turbine shaft
+   - Rotate manually to simulate water flow
+   - Monitor water level decrease as "drainage" is simulated
+   - Original water level returned when refilled
+
+
+CONTACT REFERENCE
+=================
+
+For specific sensor datasheets or pinouts:
+  • LM35 Datasheet: https://www.ti.com/product/LM35
+  • TMP36 Datasheet: https://www.analog.com/en/products/tmp36.html
+  • Arduino Pin Reference: https://www.arduino.cc/en/reference/
+
+Questions? Check serial output in Arduino IDE Serial Monitor (Ctrl+Shift+M)
+
