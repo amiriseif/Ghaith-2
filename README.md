@@ -33,23 +33,30 @@ src/
 index.html              # HTML entry point
 package.json            # Dependencies
 vite.config.js          # Vite configuration
+run.py                  # One-command startup script (installs deps + runs app)
 ```
 
 ## Installation & Setup
 
-### 1. Install Dependencies
+### Quick Start (Recommended)
+```bash
+python run.py
+```
+This will automatically install all dependencies and start the dev server.
+
+### Manual Setup
+
+#### 1. Install Dependencies
 ```bash
 npm install
 ```
 
-### 2. Start Development Server
+#### 2. Start Development Server
 ```bash
 npm run dev
 ```
 
-The app will open at `http://localhost:3000`
-
-### 3. Build for Production
+#### 3. Build for Production
 ```bash
 npm run build
 ```
